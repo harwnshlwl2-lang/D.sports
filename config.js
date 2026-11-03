@@ -2,7 +2,7 @@
 //  ملف التحكم الوحيد لموقع سرمد سبورت — عدّل هنا فقط
 // ============================================================
 window.CONFIG = {
-  SITE_NAME: "سرمد سبورت",
+  SITE_NAME: "دكتور سبورت",
 
   // ارفع صورة الشعار في نفس مجلد الموقع باسم logo.png (PNG شفاف)
   LOGO: "logo.png",
@@ -12,7 +12,7 @@ window.CONFIG = {
   SOCIAL: {
     whatsapp:  "https://wa.me/967775393823",
     telegram:  "https://t.me/CHANGE_ME",
-    instagram: "https://instagram.com/CHANGE_ME",
+    instagram: "https://instagram.com/iy_b0",
     facebook:  "https://facebook.com/CHANGE_ME"
   },
 
@@ -21,7 +21,7 @@ window.CONFIG = {
   // أو اتركه فارغاً وضع kickoff (وقت UTC) و link يدوياً
   HERO: {
     enabled: true,
-    image: "https://placehold.co/1600x900/050505/06F26A?text=SARMAD+SPORT",   // مؤقتة: بدّلها برابط تصميمك
+    image: "https://share.google/40BJ7hTkGjac44K4S",   // مؤقتة: بدّلها برابط تصميمك
     title: "المباراة الكبرى",                                                   // مؤقت
     subtitle: "عدّل هذا النص من ملف config.js",                                  // مؤقت
     matchId: "",
