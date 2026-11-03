@@ -26,7 +26,7 @@ window.CONFIG = {
     subtitle: "عدّل هذا النص من ملف config.js",                                  // مؤقت
     matchId: "",
     kickoff: "2026-12-31T18:00:00Z",                                           // مؤقت
-    link: "",
+    link: "https://tv1.dzmatch.site/p/elbarca.html",
     buttonText: "شاهد الآن"
   },
 
@@ -43,7 +43,7 @@ window.CONFIG = {
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
   // مثال لمشغل يستقبل الرابط كمعامل:  "https://badboy.shootsimo.com/splayer/Live2.php?url={URL}"
-  PLAYER_TEMPLATE: "{URL}",
+  PLAYER_TEMPLATE: "https://badboy.shootsimo.com/splayer/Live1.php{URL}",
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
