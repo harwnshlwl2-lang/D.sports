@@ -21,7 +21,7 @@ window.CONFIG = {
   // أو اتركه فارغاً وضع kickoff (وقت UTC) و link يدوياً
   HERO: {
     enabled: true,
-    image: "https://share.google/40BJ7hTkGjac44K4S",   // مؤقتة: بدّلها برابط تصميمك
+    image: "1793675298033.jpg",   // مؤقتة: بدّلها برابط تصميمك
     title: "المباراة الكبرى",                                                   // مؤقت
     subtitle: "عدّل هذا النص من ملف config.js",                                  // مؤقت
     matchId: "",
