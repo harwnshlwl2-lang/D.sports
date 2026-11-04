@@ -37,7 +37,7 @@ window.CONFIG = {
   },
 
   // الرابط التلقائي عند عدم وجود رابط للمباراة + رسالة الاعتذار
-  DEFAULT_STREAM: "https://budgetezy.org/4/6df18f7c444ef507d04bcc60ed4a589e",
+  DEFAULT_STREAM:"https://budgetezy.org/4/6df18f7c444ef507d04bcc60ed4a589e",
 ",
   DEFAULT_NOTE: "نعتذر، رابط بث هذه المباراة غير متوفر حالياً. نعرض لك تحليلات beIN SPORTS إلى حين توفره.",
 
