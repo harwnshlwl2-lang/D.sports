@@ -26,18 +26,18 @@ window.CONFIG = {
     subtitle: "",                                  // مؤقت
     matchId: "",
     kickoff: "2026-12-31T18:00:00Z",                                           // مؤقت
-    link: "https://tv1.dzmatch.site/p/elclassico.html",
+    link: "",
     buttonText: "شاهد الآن"
   },
 
   // ----- روابط البث: "رقم المباراة": "رابط البث.html" -----
   // الأرقام تراها بفتح الموقع هكذا:  https://موقعك/?admin=1
   STREAMS: {
-     "123456": "https://tv1.dzmatch.site/p/cfoot.html",
+     "575386": "https://tv1.dzmatch.site/p/cfoot.html",
   },
 
   // الرابط التلقائي عند عدم وجود رابط للمباراة + رسالة الاعتذار
-  DEFAULT_STREAM: "https://tv1.dzmatch.site/p/cosmote3.html",
+  DEFAULT_STREAM: "",
   DEFAULT_NOTE: "نعتذر، رابط بث هذه المباراة غير متوفر حالياً. نعرض لك تحليلات beIN SPORTS إلى حين توفره.",
 
   // طريقة تمرير الرابط للمشغل:
