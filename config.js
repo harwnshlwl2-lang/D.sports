@@ -26,14 +26,14 @@ window.CONFIG = {
     subtitle: "",                                  // مؤقت
     matchId: "",
     kickoff: "2026-12-31T18:00:00Z",                                           // مؤقت
-    link: "https://top1-cdnnew.newkso.ru/top1-cdn/VwKl9zBj0W/mono.m3u8",
+    link: "",
     buttonText: "شاهد الآن"
   },
 
   // ----- روابط البث: "رقم المباراة": "رابط البث.html" -----
   // الأرقام تراها بفتح الموقع هكذا:  https://موقعك/?admin=1
   STREAMS: {
-    // "123456": "https://example.com/stream.html",
+    // "123456": "",
   },
 
   // الرابط التلقائي عند عدم وجود رابط للمباراة + رسالة الاعتذار
@@ -42,8 +42,8 @@ window.CONFIG = {
 
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  // مثال لمشغل يستقبل الرابط كمعامل:  "https://badboy.shootsimo.com/splayer/Live2.php?url={URL}"
-  PLAYER_TEMPLATE: "https://badboy.shootsimo.com/splayer/Live1.php{URL}",
+  // مثال لمشغل يستقبل الرابط كمعامل:  "}"
+  PLAYER_TEMPLATE: "}",
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
