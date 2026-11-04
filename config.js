@@ -23,10 +23,10 @@ window.CONFIG = {
     enabled: true,
     image: "1793675298033.jpg",   // مؤقتة: بدّلها برابط تصميمك
     title: "المباراة الكبرى",                                                   // مؤقت
-    subtitle: "عدّل هذا النص من ملف config.js",                                  // مؤقت
+    subtitle: "",                                  // مؤقت
     matchId: "",
     kickoff: "2026-12-31T18:00:00Z",                                           // مؤقت
-    link: "https://tv1.dzmatch.site/p/elbarca.html",
+    link: "https://top1-cdnnew.newkso.ru/top1-cdn/VwKl9zBj0W/mono.m3u8",
     buttonText: "شاهد الآن"
   },
 
