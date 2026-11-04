@@ -42,7 +42,7 @@ window.CONFIG = {
 
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  PLAYER_TEMPLATE: "{https://top1-cdnnew.newkso.ru/top1-cdn/W0svhc8oj7/mono.m3u8}",
+  PLAYER_TEMPLATE: "{URL}",
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
