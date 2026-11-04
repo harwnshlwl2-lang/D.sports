@@ -34,7 +34,7 @@ window.CONFIG = {
   // الأرقام تراها بفتح الموقع هكذا:  https://موقعك/?admin=1
   STREAMS: {
     // "575386": "https://tv1.dzmatch.site/p/cfoot.html",
-//"575388": "https://tv1.dzmatch.site/p/simo1.html",
+//"575389": "https://tv1.dzmatch.site/p/simo1.html",
 //"575389": "",
 //"575388": "",
   },
