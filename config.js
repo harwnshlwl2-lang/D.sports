@@ -63,9 +63,7 @@ window.CONFIG = {
     'height' : 90,
     'width' : 728,
     'params' : {}
-  };
-</script>
-<script src="https://czernik.org/22/521f379863251627581a63740f022ad5"></script>", height: 250 },   // بين مجموعات الدوريات
+  };"", height: 250 },   // بين مجموعات الدوريات
     belowPlayer: { html: "", height: 250 },   // تحت المشغل
     bottom:      { html: "", height: 90  }    // أسفل الصفحة
   },
