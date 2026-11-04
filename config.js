@@ -37,8 +37,7 @@ window.CONFIG = {
   },
 
   // الرابط التلقائي عند عدم وجود رابط للمباراة + رسالة الاعتذار
-  DEFAULT_STREAM:"",
-",
+  DEFAULT_STREAM: "https://budgetezy.org/4/6df18f7c444ef507d04bcc60ed4a589e",
   DEFAULT_NOTE: "نعتذر، رابط بث هذه المباراة غير متوفر حالياً. نعرض لك تحليلات beIN SPORTS إلى حين توفره.",
 
   // طريقة تمرير الرابط للمشغل:
@@ -52,13 +51,13 @@ window.CONFIG = {
         atOptions = {
           'key' : '521f379863251627581a63740f022ad5',
           'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
+          'height' : 50,
+          'width' : 300,
           'params' : {}
         };
       </script>
       <script type="text/javascript" src="https://www.highperformanceformat.com/521f379863251627581a63740f022ad5/invoke.js"></script>`, 
-      height: 90 
+      height: 50 
     },
     
     list: { 
@@ -66,13 +65,13 @@ window.CONFIG = {
         atOptions = {
           'key' : '521f379863251627581a63740f022ad5',
           'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
+          'height' : 50,
+          'width' : 300,
           'params' : {}
         };
       </script>
       <script type="text/javascript" src="https://www.highperformanceformat.com/521f379863251627581a63740f022ad5/invoke.js"></script>`, 
-      height: 250 
+      height: 50 
     },
 
     belowPlayer: { html: "", height: 250 },   // تحت المشغل
