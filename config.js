@@ -55,9 +55,17 @@ window.CONFIG = {
     'width' : 728,
     'params' : {}
   };
+, height: 90  },   // بعد الصورة الكبرى
+    list:        { html: "<script>
+  atOptions = {
+    'key' : '521f379863251627581a63740f022ad5',
+    'format' : 'iframe',
+    'height' : 90,
+    'width' : 728,
+    'params' : {}
+  };
 </script>
-<script src="https://czernik.org/22/521f379863251627581a63740f022ad5"></script>", height: 90  },   // بعد الصورة الكبرى
-    list:        { html: "", height: 250 },   // بين مجموعات الدوريات
+<script src="https://czernik.org/22/521f379863251627581a63740f022ad5"></script>", height: 250 },   // بين مجموعات الدوريات
     belowPlayer: { html: "", height: 250 },   // تحت المشغل
     bottom:      { html: "", height: 90  }    // أسفل الصفحة
   },
