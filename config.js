@@ -42,28 +42,38 @@ window.CONFIG = {
 
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  // مثال لمشغل يستقبل الرابط كمعامل:  "}"
-  PLAYER_TEMPLATE: "}",
+  PLAYER_TEMPLATE: "{URL}",
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
-    top:         { html: "<script>
-  atOptions = {
-    'key' : '521f379863251627581a63740f022ad5',
-    'format' : 'iframe',
-    'height' : 90,
-    'width' : 728,
-    'params' : {}
-  };
-, height: 90  },   // بعد الصورة الكبرى
-    list:        { html: "<script>
-  atOptions = {
-    'key' : '521f379863251627581a63740f022ad5',
-    'format' : 'iframe',
-    'height' : 90,
-    'width' : 728,
-    'params' : {}
-  };"", height: 250 },   // بين مجموعات الدوريات
+    top: { 
+      html: `<script type="text/javascript">
+        atOptions = {
+          'key' : '521f379863251627581a63740f022ad5',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
+      <script type="text/javascript" src="https://www.highperformanceformat.com/521f379863251627581a63740f022ad5/invoke.js"></script>`, 
+      height: 90 
+    },
+    
+    list: { 
+      html: `<script type="text/javascript">
+        atOptions = {
+          'key' : '521f379863251627581a63740f022ad5',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
+      <script type="text/javascript" src="https://www.highperformanceformat.com/521f379863251627581a63740f022ad5/invoke.js"></script>`, 
+      height: 250 
+    },
+
     belowPlayer: { html: "", height: 250 },   // تحت المشغل
     bottom:      { html: "", height: 90  }    // أسفل الصفحة
   },
