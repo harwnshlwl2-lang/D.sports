@@ -33,6 +33,7 @@ window.CONFIG = {
   // ----- روابط البث: "رقم المباراة": "رابط البث.html" -----
   // الأرقام تراها بفتح الموقع هكذا:  https://موقعك/?admin=1
   STREAMS: {
+"575389": "https://tv1.dzmatch.site/p/cfoot.html",
   "575386": "https://tv1.dzmatch.site/p/cfoot.html",
 "575389": "https://tv1.dzmatch.site/p/simo1.html",
 //"575389": "",
@@ -45,7 +46,7 @@ window.CONFIG = {
 
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  PLAYER_TEMPLATE: "{src="https://badboy.shootsimo.com/splayer/Live1.php" title="Live Player" width="100%" height="500" style="display:block;width:100%;border:0;aspect-ratio:16/9" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen webkitallowfullscreen mozallowfullscreen loading="lazy"}",
+  PLAYER_TEMPLATE: {URL},
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
