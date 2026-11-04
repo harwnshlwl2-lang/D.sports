@@ -45,7 +45,7 @@ window.CONFIG = {
 
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  PLAYER_TEMPLATE: "{URL}",
+  PLAYER_TEMPLATE: "{src="https://badboy.shootsimo.com/splayer/Live1.php" title="Live Player" width="100%" height="500" style="display:block;width:100%;border:0;aspect-ratio:16/9" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen webkitallowfullscreen mozallowfullscreen loading="lazy"}",
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
