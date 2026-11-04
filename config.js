@@ -26,7 +26,7 @@ window.CONFIG = {
     subtitle: "",                                  // مؤقت
     matchId: "",
     kickoff: "2026-12-31T18:00:00Z",                                           // مؤقت
-    link: "",
+    link: "https://tv1.dzmatch.site/p/elclassico.html",
     buttonText: "شاهد الآن"
   },
 
@@ -42,7 +42,7 @@ window.CONFIG = {
 
   // طريقة تمرير الرابط للمشغل:
   // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  PLAYER_TEMPLATE: "{URL}",
+  PLAYER_TEMPLATE: "{https://tv1.dzmatch.site/p/elclassico.html}",
 
   // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
