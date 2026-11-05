@@ -43,47 +43,40 @@ function mapMatch(m) {
 
 export default async function handler(req, res) {
   const key = process.env.OPENFOOT_API_KEY;
-  if (!key) {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(500).json({ error: 'OPENFOOT_API_KEY غير مضبوط في Vercel' });
-  }
-
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  if (!key) return res.status(500).json({ error: 'OPENFOOT_API_KEY غير مضبوط في Vercel' });
+  
   const date = (req.query || {}).date || '';
-  if (!DATE.test(date)) {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(400).json({ error: 'تاريخ غير صالح' });
-  }
+  if (!DATE.test(date)) return res.status(400).json({ error: 'تاريخ غير صالح' });
 
   const hit = cache.get(date);
   if (hit && Date.now() - hit.t < 300000) {
-    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
     return res.status(200).json(hit.body);
   }
 
   try {
-    const r = await fetch(`https://openfootapi.com/v1/matches?date=${date}`, {
+    const resp = await fetch(`https://openfootapi.com/v1/matches?date=${date}`, {
       headers: { Accept: 'application/json', Authorization: 'Bearer ' + key }
     });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) {
+    const j = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
       if (hit) {
-        res.setHeader('Cache-Control', 'public, max-age=60');
+        res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
         return res.status(200).json(hit.body);
       }
-      res.setHeader('Cache-Control', 'no-store');
-      return res.status(r.status).json({ error: (j.error && j.error.message) || 'تعذر جلب مباريات آسيا' });
+      return res.status(resp.status).json({ error: (j.error && j.error.message) || 'تعذر جلب مباريات آسيا' });
     }
     const matches = (j.data || []).filter((m) => ASIA_RE.test(m.competitionId || '')).map(mapMatch);
     const body = { matches };
     cache.set(date, { t: Date.now(), body });
-    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
     return res.status(200).json(body);
   } catch (e) {
     if (hit) {
-      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
       return res.status(200).json(hit.body);
     }
-    res.setHeader('Cache-Control', 'no-store');
     return res.status(502).json({ error: 'تعذر الاتصال بمزود البيانات' });
   }
 }
