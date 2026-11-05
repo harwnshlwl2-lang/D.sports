@@ -1,4 +1,4 @@
-// وسيط football-data.org على Vercel — المفتاح يُقرأ من Vercel: FOOTBALL_DATA_KEY
+// وسيط football-data.org على Vercel — المفتاح يُقرأ من Environment Variables: FOOTBALL_DATA_KEY
 const BASE = 'https://api.football-data.org/v4';
 const COMPS = ['PL', 'PD', 'SA', 'BL1', 'FL1', 'CL'];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -6,9 +6,10 @@ const cache = new Map();
 
 export default async function handler(req, res) {
   const key = process.env.FOOTBALL_DATA_KEY;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
   if (!key) {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(500).json({ error: 'FOOTBALL_DATA_KEY غير مضبوط في لوحة تحكم Vercel' });
+    return res.status(500).json({ error: 'FOOTBALL_DATA_KEY غير مضبوط في إعدادات Vercel' });
   }
 
   const q = req.query || {};
@@ -27,13 +28,12 @@ export default async function handler(req, res) {
     path = `/competitions/${q.comp}/scorers?limit=20`;
     ttl = 1800;
   } else {
-    res.setHeader('Cache-Control', 'no-store');
     return res.status(400).json({ error: 'طلب غير صالح' });
   }
 
   const hit = cache.get(path);
   if (hit && Date.now() - hit.t < ttl * 1000) {
-    res.setHeader('Cache-Control', `public, max-age=${ttl}`);
+    res.setHeader('Cache-Control', `public, max-age=30, s-maxage=${ttl}, stale-while-revalidate=${ttl * 5}`);
     return res.status(200).send(hit.body);
   }
 
@@ -42,21 +42,19 @@ export default async function handler(req, res) {
     const text = await r.text();
     if (r.ok) {
       cache.set(path, { t: Date.now(), body: text });
-      res.setHeader('Cache-Control', `public, max-age=${ttl}`);
+      res.setHeader('Cache-Control', `public, max-age=30, s-maxage=${ttl}, stale-while-revalidate=${ttl * 5}`);
       return res.status(200).send(text);
     }
     if (hit) {
-      res.setHeader('Cache-Control', 'public, max-age=30');
+      res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30');
       return res.status(200).send(hit.body);
     }
-    res.setHeader('Cache-Control', 'no-store');
     return res.status(r.status).send(text);
   } catch (e) {
     if (hit) {
-      res.setHeader('Cache-Control', 'public, max-age=30');
+      res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30');
       return res.status(200).send(hit.body);
     }
-    res.setHeader('Cache-Control', 'no-store');
     return res.status(502).json({ error: 'تعذر الاتصال بمزود البيانات' });
   }
 }
