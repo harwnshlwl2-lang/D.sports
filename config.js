@@ -40,23 +40,10 @@ window.CONFIG = {
 
      ADS: {
     top:         { html: "", height: 90  },   
-    list:        { html: "<script>
-  atOptions = {
-    'key' : '0aa057df8857fdf90eb5e2fbbb9e49c0',
-    'format' : 'iframe',
-    'height' : 600,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-<script src="https://czernik.org/22/0aa057df8857fdf90eb5e2fbbb9e49c0"></script>", height: 250 },   
-    
+    list:        { html: "", height: 250 },
     // ضع الكود هنا داخل علامتي التنزيل ``
     belowPlayer: { html: "", height: 300 },   
-    
     bottom:      { html: "", height: 90  }    
   },
-
-
   REFRESH_SECONDS: 90
 };
