@@ -18,7 +18,7 @@ window.CONFIG = {
   // الصورة الكبرى (Hero Banner) بمقاس 16:9 ومتجاوبة
   HERO: {
     enabled: true,
-    image: "1.jpg",
+    image: "2.jpg",
     title: "المباراة الكبرى",
     subtitle: "تابع أثارة كرة القدم مباشرة وبأعلى جودة",
     matchId: "",
