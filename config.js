@@ -42,9 +42,7 @@ window.CONFIG = {
   ADS: {
     top:         { html: "", height: 90  },   
     list:        { html: "", height: 250 },   
-    belowPlayer: { 
-      html: `<script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>  height: 300 
-    },   
+    belowPlayer: { html: "", height: 300 },   
     bottom:      { html: "", height: 90  }    
   },
 
