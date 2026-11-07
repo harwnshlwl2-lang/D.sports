@@ -39,16 +39,19 @@ window.CONFIG = {
   PLAYER_TEMPLATE: "{URL}",
 
     // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
+    // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
     top:         { html: "", height: 90  },   // بعد الصورة الكبرى
+    
     list:        { html: "", height: 250 },   // بين مجموعات الدوريات
+    
+    // ضع كود إعلانك الجديد (الخاص برقم التعريف 32134613 بعد الضغط على "احصل على الرمز") داخل علامتي التنزيل ` ` أدناه:
     belowPlayer: { 
-      html: `<script>atOptions = { 'key' : '68d50ebe2c64bbda953172e8c93644d', 'format' : 'iframe', 'height' : 300, 'width' : 160, 'params' : {} };</script><script src="https://czernik.org/22/68d50ebe2c64bbda953172e8c93644d.js"></script>`, 
+      html: `ضع_كود_الإعلان_الكامل_هنا`, 
       height: 300 
-    },   // تحت المشغل (تم وضع البانر هنا)
+    },   
+    
     bottom:      { html: "", height: 90  }    // أسفل الصفحة
   },
-
-
   REFRESH_SECONDS: 90
 };
