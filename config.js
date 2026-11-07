@@ -43,8 +43,7 @@ window.CONFIG = {
     top:         { html: "", height: 90  },   
     list:        { html: "", height: 250 },   
     belowPlayer: { 
-      html: `<script>atOptions = { 'key' : '68d50ebe2c64bbda953172e8c93644d', 'format' : 'iframe', 'height' : 300, 'width' : 160, 'params' : {} };</script><script src="https://czernik.org/22/68d50ebe2c64bbda953172e8c93644d.js"></script>`, 
-      height: 300 
+      html: `<script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>  height: 300 
     },   
     bottom:      { html: "", height: 90  }    
   },
