@@ -1,85 +1,48 @@
 // ============================================================
-//  ملف التحكم الوحيد لموقع سرمد سبورت — عدّل هنا فقط
+//  ملف التحكم الوحيد لموقع سرمد سبورت — محدث
 // ============================================================
 window.CONFIG = {
-  SITE_NAME: "دكتور سبورت",
+  SITE_NAME: "سرمد سبورت",
 
-  // ارفع صورة الشعار في نفس مجلد الموقع باسم logo.png (PNG شفاف)
+  // شعار الموقع
   LOGO: "logo.png",
 
-  // ----- حسابات التواصل (الأيقونات الثلاثة الأخيرة روابط مؤقتة، بدّلها بروابطك) -----
-  // اترك الرابط فارغاً "" لإخفاء الأيقونة
+  // حسابات التواصل الاجتماعي
   SOCIAL: {
     whatsapp:  "https://wa.me/967775393823",
     telegram:  "https://t.me/CHANGE_ME",
-    instagram: "https://instagram.com/iy_b0",
+    instagram: "https://instagram.com/CHANGE_ME",
     facebook:  "https://facebook.com/CHANGE_ME"
   },
 
-  // ----- الصورة الكبرى تحت الشريط العلوي -----
-  // matchId: رقم مباراة من وضع المشرف (?admin=1) فيُحسب العدّاد ويُفتح البث تلقائياً
-  // أو اتركه فارغاً وضع kickoff (وقت UTC) و link يدوياً
+  // الصورة الكبرى (Hero Banner) بمقاس 16:9 ومتجاوبة
   HERO: {
     enabled: true,
-    image: "1.jpg",   // مؤقتة: بدّلها برابط تصميمك
-    title: "المباراة الكبرى",                                                   // مؤقت
-    subtitle: "",                                  // مؤقت
+    image: "https://placehold.co/1600x900/050505/06F26A?text=SARMAD+SPORT",
+    title: "المباراة الكبرى",
+    subtitle: "تابع أثارة كرة القدم مباشرة وبأعلى جودة",
     matchId: "",
-    kickoff: "2026-12-31T18:00:00Z",                                           // مؤقت
+    kickoff: "2026-12-31T18:00:00Z",
     link: "",
     buttonText: "شاهد الآن"
   },
 
-  // ----- روابط البث: "رقم المباراة": "رابط البث.html" -----
-  // الأرقام تراها بفتح الموقع هكذا:  https://موقعك/?admin=1
+  // روابط البث الخاصة بالمباريات (ضع رقم المباراة من وضع المشرف كـ مفتاح، والرابط كقيمة)
   STREAMS: {
-"575389": "https://tv1.dzmatch.site/p/cfoot.html",
-  "575386": "https://tv1.dzmatch.site/p/cfoot.html",
-"575389": "https://tv1.dzmatch.site/p/simo1.html",
-//"575389": "",
-//"575388": "",
+    // مثال: "123456": "https://badboy.shootsimo.com/splayer/Live1.php",
   },
 
-  // الرابط التلقائي عند عدم وجود رابط للمباراة + رسالة الاعتذار
-  DEFAULT_STREAM: "",
-  DEFAULT_NOTE: "نعتذر، رابط بث هذه المباراة غير متوفر حالياً. نعرض لك تحليلات beIN SPORTS إلى حين توفره.",
+  // الرابط الافتراضي للمشغل (الذي أرسلته)
+  DEFAULT_STREAM: "https://badboy.shootsimo.com/splayer/Live1.php",
+  DEFAULT_NOTE: "نعتذر، رابط بث هذه المباراة غير متوفر حالياً. نعرض لك المشغل العام.",
 
-  // طريقة تمرير الرابط للمشغل:
-  // "{URL}" = يفتح رابط البث مباشرة داخل المشغل (الافتراضي)
-  PLAYER_TEMPLATE: {URL},
+  PLAYER_TEMPLATE: "{URL}",
 
-  // ----- أماكن الإعلانات: ألصق كود الإعلان في html، والمكان الفارغ يختفي تلقائياً -----
   ADS: {
-    top: { 
-      html: `<script type="text/javascript">
-        atOptions = {
-          'key' : '521f379863251627581a63740f022ad5',
-          'format' : 'iframe',
-          'height' : 50,
-          'width' : 300,
-          'params' : {}
-        };
-      </script>
-      <script type="text/javascript" src="https://www.highperformanceformat.com/521f379863251627581a63740f022ad5/invoke.js"></script>`, 
-      height: 50 
-    },
-    
-    list: { 
-      html: `<script type="text/javascript">
-        atOptions = {
-          'key' : '521f379863251627581a63740f022ad5',
-          'format' : 'iframe',
-          'height' : 50,
-          'width' : 300,
-          'params' : {}
-        };
-      </script>
-      <script type="text/javascript" src="https://www.highperformanceformat.com/521f379863251627581a63740f022ad5/invoke.js"></script>`, 
-      height: 50 
-    },
-
-    belowPlayer: { html: "", height: 250 },   // تحت المشغل
-    bottom:      { html: "", height: 90  }    // أسفل الصفحة
+    top:         { html: "", height: 90  },
+    list:        { html: "", height: 250 },
+    belowPlayer: { html: "", height: 250 },
+    bottom:      { html: "", height: 90  }
   },
 
   REFRESH_SECONDS: 90
