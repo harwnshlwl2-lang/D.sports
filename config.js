@@ -38,7 +38,7 @@ window.CONFIG = {
 
   PLAYER_TEMPLATE: "{URL}",
 
-  //   ADS: {
+     ADS: {
     top:         { html: "", height: 90  },   
     list:        { html: "", height: 250 },   
     
