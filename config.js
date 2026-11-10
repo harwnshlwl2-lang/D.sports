@@ -29,7 +29,7 @@ window.CONFIG = {
 
   // روابط البث الخاصة بالمباريات
   STREAMS: {
-    // "123456": "https://badboy.shootsimo.com/splayer/Live1.php",
+   "560636": "https://st.sp5.fun/2026/08/blog-post_19.html",
   },
 
   // الرابط الافتراضي للمشغل
