@@ -23,7 +23,7 @@ window.CONFIG = {
     subtitle: "تابع أثارة كرة القدم مباشرة وبأعلى جودة",
     matchId: "",
     kickoff: "2026-12-31T18:00:00Z",
-    link: "",
+    link: "https://st.sp5.fun/2026/08/blog-post_19.html",
     buttonText: "شاهد الآن"
   },
 
