@@ -1,52 +1,50 @@
-// وسيط Football-Data.org لدوري الأمم الأوروبية (UNL) على Vercel — المفتاح: FOOTBALL_DATA_API_KEY
+// وسيط OpenFootAPI لدوري أبطال آسيا على Vercel — المفتاح: OPENFOOT_API_KEY
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ASIA_RE = /afc|asia/i;
 const cache = new Map();
 
-function mapStatus(s) {
-  const status = String(s || '').toUpperCase();
-  if (status === 'FINISHED') return 'FINISHED';
-  if (status === 'IN_PLAY' || status === 'PAUSED') return 'IN_PLAY';
-  if (status === 'POSTPONED') return 'POSTPONED';
-  if (status === 'CANCELLED' || status === 'SUSPENDED') return 'CANCELLED';
+function mapStatus(m) {
+  const s = String(m.status || '').toLowerCase();
+  const p = String(m.period || '').toUpperCase();
+  if (/finish|ended|complete/.test(s) || p === 'FT') return 'FINISHED';
+  if (p === 'HT') return 'PAUSED';
+  if (['1H', '2H', 'ET', 'PEN'].includes(p) || /live|play|progress/.test(s)) return 'IN_PLAY';
+  if (/postpon/.test(s)) return 'POSTPONED';
+  if (/cancel|abandon/.test(s)) return 'CANCELLED';
   return 'SCHEDULED';
+}
+
+function pick(...v) {
+  for (const x of v) if (x !== undefined && x !== null && x !== '') return x;
+  return null;
 }
 
 function team(t) {
   t = t || {};
   const name = t.name || '';
-  return { 
-    id: t.id || name, 
-    name, 
-    shortName: t.shortName || name, 
-    tla: t.tla || name.slice(0, 3), 
-    crest: t.crest || null 
-  };
+  return { id: t.id || name, name, shortName: t.shortName || name, tla: t.code || t.tla || name.slice(0, 3), crest: t.logoUrl || null };
 }
 
 function mapMatch(m) {
   const sc = m.score || {};
-  const ft = sc.fullTime || {};
+  const home = pick(sc.home, sc.fullTime && sc.fullTime.home, sc.current && sc.current.home, m.homeScore, m.goals && m.goals.home);
+  const away = pick(sc.away, sc.fullTime && sc.fullTime.away, sc.current && sc.current.away, m.awayScore, m.goals && m.goals.away);
   return {
-    id: 'unl_' + m.id,
-    utcDate: m.utcDate,
-    status: mapStatus(m.status),
-    minute: null,
-    competition: { code: 'UNL', name: 'دوري الأمم الأوروبية' },
+    id: 'a_' + m.id,
+    utcDate: m.kickoffAt,
+    status: mapStatus(m),
+    minute: pick(m.minute, m.clock),
+    competition: { code: 'ACL', name: 'دوري أبطال آسيا' },
     homeTeam: team(m.homeTeam),
     awayTeam: team(m.awayTeam),
-    score: { 
-      fullTime: { 
-        home: ft.home !== undefined ? ft.home : null, 
-        away: ft.away !== undefined ? ft.away : null 
-      } 
-    }
+    score: { fullTime: { home, away } }
   };
 }
 
 export default async function handler(req, res) {
-  const key = process.env.FOOTBALL_DATA_API_KEY || process.env.FD_API_KEY;
+  const key = process.env.OPENFOOT_API_KEY;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  if (!key) return res.status(500).json({ error: 'FOOTBALL_DATA_API_KEY غير مضبوط في لوحة تحكم Vercel' });
+  if (!key) return res.status(500).json({ error: 'OPENFOOT_API_KEY غير مضبوط في Vercel' });
   
   const date = (req.query || {}).date || '';
   if (!DATE.test(date)) return res.status(400).json({ error: 'تاريخ غير صالح' });
@@ -58,8 +56,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const resp = await fetch(`https://api.football-data.org/v4/competitions/UNL/matches?dateFrom=${date}&dateTo=${date}`, {
-      headers: { Accept: 'application/json', 'X-Auth-Token': key }
+    const resp = await fetch(`https://openfootapi.com/v1/matches?date=${date}`, {
+      headers: { Accept: 'application/json', Authorization: 'Bearer ' + key }
     });
     const j = await resp.json().catch(() => ({}));
     if (!resp.ok) {
@@ -67,9 +65,9 @@ export default async function handler(req, res) {
         res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
         return res.status(200).json(hit.body);
       }
-      return res.status(resp.status).json({ error: j.message || 'تعذر جلب مباريات دوري الأمم الأوروبية' });
+      return res.status(resp.status).json({ error: (j.error && j.error.message) || 'تعذر جلب مباريات آسيا' });
     }
-    const matches = (j.matches || []).map(mapMatch);
+    const matches = (j.data || []).filter((m) => ASIA_RE.test(m.competitionId || '')).map(mapMatch);
     const body = { matches };
     cache.set(date, { t: Date.now(), body });
     res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
