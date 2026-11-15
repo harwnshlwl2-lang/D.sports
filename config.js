@@ -3,7 +3,7 @@
 // ============================================================
 window.CONFIG = {
   SITE_NAME: "دكتور سبورت",
-  SHEET_API_URL: "AKfycbyrac7S3CIyEjnTPgTuAxlo8J4xEaEoC2QXzahucCJC",
+  SHEET_API_URL: "https://script.google.com/macros/s/AKfycbwpLaQki_ld3c4KgwUgumsHQtSvVhknwVF3zHywu5LoSz68-PvRy7Mlaa8b5AHeDjVXdg/exec",
 
 
   // شعار الموقع
