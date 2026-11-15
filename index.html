@@ -278,13 +278,60 @@ async function api(p){
   if(!r.ok)throw new Error(j.message||j.error||('HTTP '+r.status));
   return j;
 }
+
+/* ==========================================================
+   تعديل دالة loadMatches: دمج مباريات API القديم + جدول جوجل
+   ========================================================== */
 async function loadMatches(){
   const t=new Date(),u=n=>isoD(new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate()+n)));
-  const j=await api({type:'matches',from:u(-2),to:u(7)});
-  S.matches=(j.matches||[]).sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate));
+  
+  // 1. جلب المباريات الأصلية من الـ API القديم للقالب
+  let originalMatches = [];
+  try {
+    const r = await api({type:'matches', from:u(-2), to:u(7)});
+    originalMatches = r.matches || [];
+  } catch(e) {
+    console.log("خطأ في جلب مباريات API القديم:", e);
+  }
+
+  // 2. جلب المباريات المخصصة من جدول بيانات جوجل الخاص بك
+  let sheetMatches = [];
+  try {
+    if (window.CONFIG && window.CONFIG.SHEET_API_URL) {
+      const sheetRes = await fetch(window.CONFIG.SHEET_API_URL);
+      const sheetData = await sheetRes.json();
+      
+      // تحويل بيانات جدول جوجل لتتطابق مع هيكل المباريات في القالب
+      sheetMatches = sheetData.map(item => ({
+        id: item.match_id || ('sheet_' + Math.random()),
+        competition: { code: 'CUSTOM', name: item.league_name || 'مباريات خاصة' },
+        utcDate: item.match_time || new Date().toISOString(),
+        status: 'SCHEDULED',
+        homeTeam: { name: item.home_team || 'الفريق المستضيف', crest: item.home_crest || '' },
+        awayTeam: { name: item.away_team || 'الفريق الضيف', crest: item.away_crest || '' },
+        score: { fullTime: { home: null, away: null } }
+      }));
+
+      // ربط روابط البث الخاصة بجدول جوجل تلقائياً بمصفوفة البثوث في القالب
+      if (!C.STREAMS) C.STREAMS = {};
+      sheetData.forEach(item => {
+        if (item.match_id && item.stream_link) {
+          C.STREAMS[item.match_id] = item.stream_link;
+        }
+      });
+    }
+  } catch(e) {
+    console.log("خطأ في جلب بيانات جدول جوجل:", e);
+  }
+
+  // 3. دمج القائمتين معاً وترتيبهما بحسب الوقت
+  S.matches = [...originalMatches, ...sheetMatches].sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate));
+  
   S.matches.forEach(m=>{if(m.competition&&m.competition.emblem)S.emb[m.competition.code]=m.competition.emblem});
-  S.loaded=true;S.err='';
+  S.loaded = true;
+  S.err = '';
 }
+
 async function ensureMatches(){
   if(S.loaded)return;
   try{await loadMatches()}catch(e){S.err=e.message}
@@ -397,7 +444,7 @@ async function viewHome(){
   }else{
     let list=S.matches.filter(m=>lk(new Date(m.utcDate))===S.day);
     if(S.league==='FAV')list=list.filter(m=>S.favs.has(m.homeTeam.id)||S.favs.has(m.awayTeam.id));
-    else if(S.league!=='ALL')list=list.filter(m=>m.competition.code===S.league);
+    else if(S.league!=='ALL')list=list.filter(m=>m.competition.code===S.league||m.competition.code==='CUSTOM');
     h+=list.length?groupsHTML(list,true):emptyBox('لا توجد مباريات في هذا اليوم.');
   }
   return h+adSlot('bottom');
@@ -699,16 +746,10 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 })();
 </script>
-  <script src="config.js"></script>
-  <script>
-// ... (أكواد الجافاسكربت)
-</script>
-<!-- كود Social Bar الجديد -->
-</script>
-  <script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>
-  <script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>
-  <script data-cfasync="false" src="https://czernik.org/14/b110eac2ad9cee4cdd47ad6d7088e68"></script>
-  <script>
+<script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>
+<script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>
+<script data-cfasync="false" src="https://czernik.org/14/b110eac2ad9cee4cdd47ad6d7088e68"></script>
+<script>
   atOptions = {
     'key' : '0aa057df8857fdf90eb5e2fbbb9e49c0',
     'format' : 'iframe',
@@ -716,7 +757,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     'width' : 160,
     'params' : {}
   }
-  </script>
-  <script src="https://czernik.org/22/0aa057df8857fdf90eb5e2fbbb9e49c0"></script>
+</script>
+<script src="https://czernik.org/22/0aa057df8857fdf90eb5e2fbbb9e49c0"></script>
 </body>
 </html>
