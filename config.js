@@ -6,6 +6,11 @@ window.CONFIG = {
   SHEET_API_URL: "https://script.google.com/macros/s/AKfycbwpLaQki_ld3c4KgwUgumsHQtSvVhknwVF3zHywu5LoSz68-PvRy7Mlaa8b5AHeDjVXdg/exec",
 
 
+  // المنطقة الزمنية لأوقات الجدول إذا كُتبت بدون منطقة (مثل 2026-11-15 20:00). اليمن/السعودية = +03:00
+  SHEET_TZ: "+03:00",
+  // مدة المباراة بالدقائق (لحساب "جارية/انتهت" تلقائياً لمباريات الجدول إن لم يوجد عمود status)
+  MATCH_MINUTES: 130,
+
   // شعار الموقع
   LOGO: "logo.png",
 

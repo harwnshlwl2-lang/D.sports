@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lalezar&display=swap" rel="stylesheet">
@@ -267,7 +268,8 @@ let toastT;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),2200)}
 
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
-const S={matches:[],loaded:false,err:'',day:lk(new Date()),league:'ALL',asia:{},asiaById:{},st:{},sc:{},emb:{},favs:new Set(load('sp_favs',[]))};
+const BASE_STREAMS=Object.assign({},C.STREAMS||{});
+const S={matches:[],fd:[],sheet:[],loaded:false,err:'',warn:[],prev:null,day:lk(new Date()),league:'ALL',asia:{},asiaById:{},st:{},sc:{},emb:{},favs:new Set(load('sp_favs',[]))};
 try{S.asiaById=JSON.parse(sessionStorage.getItem('sp_asia')||'{}')}catch(e){}
 const DAYS=[];for(let i=-2;i<=6;i++){const d=new Date();d.setDate(d.getDate()+i);DAYS.push({key:lk(d),off:i,d})}
 const saveFavs=()=>localStorage.setItem('sp_favs',JSON.stringify([...S.favs]));
@@ -280,56 +282,94 @@ async function api(p){
 }
 
 /* ==========================================================
-   تعديل دالة loadMatches: دمج مباريات API القديم + جدول جوجل
+   جلب المباريات: API الرسمي + جدول جوجل (بالتوازي، مع مهلة، ومعرّفات ثابتة)
    ========================================================== */
+const withTimeout=(url,ms)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);return fetch(url,{signal:c.signal}).finally(()=>clearTimeout(t))};
+const hash=s=>{let h=5381;for(const ch of String(s))h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36)};
+const safeUrl=u=>/^https?:\/\//i.test(String(u||'').trim())?String(u).trim():'';
+
+/* يحوّل أي صيغة وقت قادمة من الجدول إلى ISO صحيح، أو null إن كانت غير صالحة */
+function parseSheetTime(v){
+  if(v==null||v==='')return null;
+  if(typeof v==='number'&&v>1e11)v=new Date(v).toISOString();
+  let s=String(v).trim().replace(/[\u0660-\u0669]/g,d=>d.charCodeAt(0)-0x660).replace(/[\u06F0-\u06F9]/g,d=>d.charCodeAt(0)-0x6F0);
+  // صيغة جداول جوجل العربية: "9:00:00 م 2026/11/15" أو "2026/11/15 9:00 PM" (ص/AM = صباحاً، م/PM = مساءً)
+  const tm=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(ص|م|AM|PM|am|pm)?/),dm=s.match(/(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/);
+  if(tm&&dm&&!/T.*(Z|[+-]\d\d:?\d\d)$/.test(s)){
+    let hh=+tm[1];const ap=(tm[4]||'').toLowerCase();
+    if(ap==='م'||ap==='pm'){if(hh<12)hh+=12}else if(ap==='ص'||ap==='am'){if(hh===12)hh=0}
+    const z=n=>String(n).padStart(2,'0');
+    s=`${dm[1]}-${z(dm[2])}-${z(dm[3])}T${z(hh)}:${tm[2]}:${tm[3]||'00'}`+(C.SHEET_TZ||'+03:00');
+    const d0=new Date(s);return isNaN(d0)?null:d0.toISOString();
+  }
+  // "2026-11-15 20:00" أو "2026-11-15T20:00" بدون منطقة زمنية => نطبّق توقيت الجدول (افتراضياً اليمن +03:00)
+  if(/^\d{4}-\d{1,2}-\d{1,2}[ T]\d{1,2}:\d{2}(:\d{2})?$/.test(s)){
+    s=s.replace(' ','T').replace(/T(\d):/,'T0$1:').replace(/-(\d)(?=-|T)/g,'-0$1');
+    s+=(C.SHEET_TZ||'+03:00');
+  }
+  const d=new Date(s);
+  return isNaN(d)?null:d.toISOString();
+}
+const SHEET_ST={SCHEDULED:'SCHEDULED',TIMED:'SCHEDULED',LIVE:'IN_PLAY',IN_PLAY:'IN_PLAY',PAUSED:'PAUSED',HT:'PAUSED',FINISHED:'FINISHED',FT:'FINISHED',POSTPONED:'POSTPONED',CANCELLED:'CANCELLED'};
+/* الحالة: من عمود status إن وُجد، وإلا تُحسب تلقائياً من وقت البداية */
+function sheetStatus(item,iso){
+  const raw=String(item.status||'').trim().toUpperCase().replace(/\s+/g,'_');
+  if(SHEET_ST[raw])return SHEET_ST[raw];
+  const k=new Date(iso).getTime(),now=Date.now(),LEN=(C.MATCH_MINUTES||130)*60000;
+  return now<k?'SCHEDULED':now<k+LEN?'IN_PLAY':'FINISHED';
+}
+const num=v=>(v===''||v==null||isNaN(v))?null:Number(v);
+
+async function fetchSheetRows(){
+  const r=await withTimeout(C.SHEET_API_URL,10000);
+  if(!r.ok)throw new Error('Sheet HTTP '+r.status);
+  const rows=await r.json();
+  const arr=Array.isArray(rows)?rows:(rows&&(rows.data||rows.matches||rows.rows));
+  if(!Array.isArray(arr))throw new Error('استجابة الجدول ليست مصفوفة JSON: '+JSON.stringify(rows).slice(0,120));
+  return arr;
+}
+function buildSheet(arr,fdList){
+  const out={list:[],streams:{},warn:[]};
+  arr.forEach((item,i)=>{
+    const raw=String(item.match_id==null?'':item.match_id).trim();
+    const link=safeUrl(item.stream_link);
+    // رقم مطابق لمباراة حقيقية من الـ API => نربط البث بها فقط (بدون تكرار المباراة)
+    if(raw&&fdList.some(m=>String(m.id)===raw)){if(link)out.streams[raw]=link;return}
+    const iso=parseSheetTime(item.match_time);
+    if(!iso){out.warn.push('الصف '+(i+2)+': match_time غير صالح => "'+item.match_time+'"');return}
+    const hn=item.home_team||'الفريق المستضيف',an=item.away_team||'الفريق الضيف';
+    const id='s_'+(raw||hash(hn+'|'+an+'|'+iso));
+    if(link)out.streams[id]=link;
+    out.list.push({
+      id,utcDate:iso,status:sheetStatus(item,iso),minute:null,
+      competition:{code:'CUSTOM',name:item.league_name||'مباريات خاصة'},
+      homeTeam:{id:'t_'+hash(hn),name:hn,crest:item.home_crest||''},
+      awayTeam:{id:'t_'+hash(an),name:an,crest:item.away_crest||''},
+      score:{fullTime:{home:num(item.home_score),away:num(item.away_score)}}
+    });
+  });
+  return out;
+}
+
 async function loadMatches(){
   const t=new Date(),u=n=>isoD(new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate()+n)));
-  
-  // 1. جلب المباريات الأصلية من الـ API القديم للقالب
-  let originalMatches = [];
-  try {
-    const r = await api({type:'matches', from:u(-2), to:u(7)});
-    originalMatches = r.matches || [];
-  } catch(e) {
-    console.log("خطأ في جلب مباريات API القديم:", e);
-  }
-
-  // 2. جلب المباريات المخصصة من جدول بيانات جوجل الخاص بك
-  let sheetMatches = [];
-  try {
-    if (window.CONFIG && window.CONFIG.SHEET_API_URL) {
-      const sheetRes = await fetch(window.CONFIG.SHEET_API_URL);
-      const sheetData = await sheetRes.json();
-      
-      // تحويل بيانات جدول جوجل لتتطابق مع هيكل المباريات في القالب
-      sheetMatches = sheetData.map(item => ({
-        id: item.match_id || ('sheet_' + Math.random()),
-        competition: { code: 'CUSTOM', name: item.league_name || 'مباريات خاصة' },
-        utcDate: item.match_time || new Date().toISOString(),
-        status: 'SCHEDULED',
-        homeTeam: { name: item.home_team || 'الفريق المستضيف', crest: item.home_crest || '' },
-        awayTeam: { name: item.away_team || 'الفريق الضيف', crest: item.away_crest || '' },
-        score: { fullTime: { home: null, away: null } }
-      }));
-
-      // ربط روابط البث الخاصة بجدول جوجل تلقائياً بمصفوفة البثوث في القالب
-      if (!C.STREAMS) C.STREAMS = {};
-      sheetData.forEach(item => {
-        if (item.match_id && item.stream_link) {
-          C.STREAMS[item.match_id] = item.stream_link;
-        }
-      });
-    }
-  } catch(e) {
-    console.log("خطأ في جلب بيانات جدول جوجل:", e);
-  }
-
-  // 3. دمج القائمتين معاً وترتيبهما بحسب الوقت
-  S.matches = [...originalMatches, ...sheetMatches].sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate));
-  
+  let fdErr=null,shErr=null,rows=null;
+  // الطلبان يعملان معاً (بالتوازي) بدل الانتظار الواحد بعد الآخر
+  await Promise.all([
+    api({type:'matches',from:u(-2),to:u(7)}).then(r=>{S.fd=r.matches||[]}).catch(e=>{fdErr=e}),
+    C.SHEET_API_URL?fetchSheetRows().then(r=>{rows=r}).catch(e=>{shErr=e}):Promise.resolve()
+  ]);
+  S.warn=[];
+  if(rows){const r=buildSheet(rows,S.fd);S.sheet=r.list;S.warn=r.warn;C.STREAMS=Object.assign({},BASE_STREAMS,r.streams)}
+  if(fdErr)S.warn.push('API: '+fdErr.message);
+  if(shErr)S.warn.push('Sheet: '+shErr.message);
+  if(fdErr&&(shErr||!C.SHEET_API_URL)&&!S.fd.length&&!S.sheet.length)throw fdErr; // فشل كامل => نُظهر رسالة الخطأ
+  // عند فشل مصدر مؤقتاً نُبقي آخر بيانات ناجحة بدل مسحها
+  const nxt=[...S.fd,...S.sheet].sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate));
+  notifyChanges(S.matches,nxt);
+  S.matches=nxt;
   S.matches.forEach(m=>{if(m.competition&&m.competition.emblem)S.emb[m.competition.code]=m.competition.emblem});
-  S.loaded = true;
-  S.err = '';
+  S.loaded=true;S.err='';
 }
 
 async function ensureMatches(){
@@ -383,18 +423,19 @@ function rowHTML(m){
     `<div class="sc${live?' lv':''}">${mid}</div>`+
     `<div class="tc">${crest(m.awayTeam)}<span>${esc(tn(m.awayTeam))}</span></div></a>`;
 }
-function group(code,list){
+function group(code,list,name){
   const em=S.emb[code];
-  return `<section class="grp"><div class="gh">${em?`<img class="cr s" src="${esc(em)}" alt="" onerror="this.remove()">`:'<i class="fa-solid fa-trophy"></i>'}<span>${lname(code)}</span><small>${list.length}</small></div>${list.map(rowHTML).join('')}</section>`;
+  return `<section class="grp"><div class="gh">${em?`<img class="cr s" src="${esc(em)}" alt="" onerror="this.remove()">`:'<i class="fa-solid fa-trophy"></i>'}<span>${esc(name||lname(code))}</span><small>${list.length}</small></div>${list.map(rowHTML).join('')}</section>`;
 }
 function groupsHTML(list,withAd){
-  let out='',n=0;
-  const codes=LEAGUES.map(l=>l.code).filter(c=>list.some(m=>m.competition.code===c));
-  codes.forEach(c=>{
-    out+=group(c,list.filter(m=>m.competition.code===c));
-    n++;
-    if(withAd&&n===1&&codes.length>1)out+=adSlot('list');
-  });
+  // مباريات الجدول (CUSTOM) أولاً، مجمّعة بحسب league_name، ثم الدوريات المعروفة
+  const blocks=[];
+  [...new Set(list.filter(m=>m.competition.code==='CUSTOM').map(m=>m.competition.name))].forEach(nm=>
+    blocks.push({code:'CUSTOM',name:nm,list:list.filter(m=>m.competition.code==='CUSTOM'&&m.competition.name===nm)}));
+  LEAGUES.map(l=>l.code).filter(c=>list.some(m=>m.competition.code===c)).forEach(c=>
+    blocks.push({code:c,list:list.filter(m=>m.competition.code===c)}));
+  let out='';
+  blocks.forEach((b,i)=>{out+=group(b.code,b.list,b.name);if(withAd&&i===0&&blocks.length>1)out+=adSlot('list')});
   return out;
 }
 
@@ -424,8 +465,10 @@ function dateStrip(){
 }
 function leagueChips(){
   if(S.league==='FAV'&&!S.favs.size)S.league='ALL';
+  if(S.league==='CUSTOM'&&!S.sheet.length)S.league='ALL';
   const chips=[['ALL','الكل']];
   if(S.favs.size)chips.push(['FAV','⭐ المفضلة']);
+  if(S.sheet.length)chips.push(['CUSTOM','مباريات الموقع']);
   LEAGUES.forEach(l=>chips.push([l.code,SHORT[l.code]]));
   chips.push(['ACL',SHORT.ACL]);
   return `<div class="scroller">${chips.map(c=>`<button class="chip ${c[0]===S.league?'on':''}" data-lg="${c[0]}">${c[1]}</button>`).join('')}</div>`;
@@ -434,6 +477,7 @@ function leagueChips(){
 async function viewHome(){
   await ensureMatches();
   let h=hero()+adSlot('top')+subnav('matches')+dateStrip()+leagueChips();
+  if(ADMIN&&S.warn.length)h+=`<div class="adm"><div style="direction:ltr;font-size:12px">${S.warn.map(w=>esc(w)).join('<br>')}</div></div>`;
   if(S.league==='ACL'){
     try{
       const list=await loadAsia(S.day);
@@ -444,7 +488,7 @@ async function viewHome(){
   }else{
     let list=S.matches.filter(m=>lk(new Date(m.utcDate))===S.day);
     if(S.league==='FAV')list=list.filter(m=>S.favs.has(m.homeTeam.id)||S.favs.has(m.awayTeam.id));
-    else if(S.league!=='ALL')list=list.filter(m=>m.competition.code===S.league||m.competition.code==='CUSTOM');
+    else if(S.league!=='ALL')list=list.filter(m=>m.competition.code===S.league);
     h+=list.length?groupsHTML(list,true):emptyBox('لا توجد مباريات في هذا اليوم.');
   }
   return h+adSlot('bottom');
@@ -569,12 +613,12 @@ let MT=null;
 
 /* صفحة تفاصيل المباراة (بدون مشغل مباشر، مع زر البث والترتيب أسفله) */
 async function viewMatch(id){
-  const asia=id.indexOf('a_')===0;
+  const asia=id.indexOf('a_')===0,custom=id.indexOf('s_')===0;
   let m=asia?S.asiaById[id]:null;
   if(!asia){
     await ensureMatches();
     m=S.matches.find(x=>String(x.id)===id)||null;
-    try{
+    if(!custom)try{
       const j=await api({type:'match',id});
       const d=j.match||j;
       d.head2head=j.head2head||d.head2head;
@@ -633,6 +677,12 @@ async function showTab(name){
 
 async function updateHead(){
   if(!MT||String(MT.id).indexOf('a_')===0)return;
+  if(String(MT.id).indexOf('s_')===0){
+    try{await loadMatches()}catch(e){return}
+    const n=S.matches.find(x=>String(x.id)===String(MT.id));
+    if(n){MT.m=n;const hd=$('#mhead');if(hd)hd.innerHTML=matchHubHeader(n)}
+    return;
+  }
   try{
     const j=await api({type:'match',id:MT.id});
     const d=j.match||j;
@@ -707,24 +757,41 @@ document.addEventListener('click',e=>{
   else if(t.dataset.close!==undefined){const p=$('#promo');if(p)p.remove()}
 });
 
-/* تفعيل زر الإشعارات العلوي */
-document.addEventListener('DOMContentLoaded',()=>{
-  const notifBtn=$('#notif-btn');
-  if(notifBtn){
-    notifBtn.addEventListener('click',async()=>{
-      if(!('Notification' in window)){
-        toast('متصفحك لا يدعم الإشعارات');
-        return;
-      }
-      const perm = await Notification.requestPermission();
-      if(perm==='granted'){
-        toast('تم تفعيل الإشعارات بنجاح!');
-      }else{
-        toast('تم رفض إذن الإشعارات');
-      }
-    });
-  }
-});
+/* ===== الإشعارات (تعمل أثناء فتح الموقع/التطبيق؛ الإشعار في الخلفية الكاملة يحتاج Web Push + خادم) ===== */
+const notifOn=()=>'Notification' in window&&Notification.permission==='granted'&&localStorage.getItem('sp_notif')==='1';
+async function pushNote(title,body,tag){
+  try{
+    const reg=await navigator.serviceWorker.ready; // أندرويد يمنع new Notification() فنستخدم الـ Service Worker
+    await reg.showNotification(title,{body,tag,icon:'logo.png',badge:'logo.png',dir:'rtl',lang:'ar',data:{url:'./#/live'}});
+  }catch(e){try{new Notification(title,{body,icon:'logo.png',tag})}catch(_){}}
+}
+function notifyChanges(oldL,newL){
+  if(!notifOn()||!oldL||!oldL.length)return;
+  const old=new Map(oldL.map(m=>[String(m.id),m]));
+  newL.forEach(m=>{
+    const o=old.get(String(m.id));if(!o)return;
+    // المفضلة إن وُجدت، وإلا المباريات التي لها بث
+    const mine=S.favs.size?(S.favs.has(m.homeTeam.id)||S.favs.has(m.awayTeam.id)):!!(C.STREAMS&&C.STREAMS[m.id]);
+    if(!mine)return;
+    const name=tn(m.homeTeam)+' × '+tn(m.awayTeam),sc=x=>x.score.fullTime.home+' - '+x.score.fullTime.away;
+    if(!isLive(o)&&isLive(m))pushNote('بدأت المباراة 🔴',name,'s'+m.id);
+    else if(isLive(m)&&hasScore(m)&&hasScore(o)&&sc(o)!==sc(m))pushNote('هدف ⚽',name+'\n'+sc(m),'g'+m.id);
+    else if(!isFin(o)&&isFin(m))pushNote('انتهت المباراة',name+(hasScore(m)?' ('+sc(m)+')':''),'e'+m.id);
+  });
+}
+(function bell(){
+  const nb=$('#notif-btn');if(!nb)return;
+  const sync=()=>{const on=notifOn();nb.innerHTML='<i class="fa-solid '+(on?'fa-bell':'fa-bell-slash')+'"></i>';nb.title=on?'إيقاف الإشعارات':'تفعيل الإشعارات'};
+  nb.addEventListener('click',async()=>{
+    if(!('Notification' in window)||!('serviceWorker' in navigator)){toast('المتصفح لا يدعم الإشعارات (في الآيفون ثبّت الموقع على الشاشة الرئيسية أولاً)');return}
+    if(notifOn()){localStorage.removeItem('sp_notif');sync();toast('تم إيقاف الإشعارات');return}
+    if(Notification.permission==='denied'){toast('الإشعارات محظورة — فعّلها من إعدادات المتصفح للموقع');return}
+    const perm=await Notification.requestPermission();
+    if(perm==='granted'){localStorage.setItem('sp_notif','1');sync();toast('تم التفعيل ✅');pushNote(C.SITE_NAME||'','تم تفعيل الإشعارات: مباريات فريقك المفضل وبدايات المباريات ذات البث','t')}
+    else toast('تم رفض إذن الإشعارات');
+  });
+  sync();
+})();
 
 (function init(){
   const logo=$('#logo');
@@ -746,7 +813,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 })();
 </script>
-<script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>
 <script data-cfasync="false" src="https://czernik.org/14/8c560d9e1dadc21286df90d56400bfae"></script>
 <script data-cfasync="false" src="https://czernik.org/14/b110eac2ad9cee4cdd47ad6d7088e68"></script>
 <script>
